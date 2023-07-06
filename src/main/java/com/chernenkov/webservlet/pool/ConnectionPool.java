@@ -11,9 +11,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPool {
+    private static final int CONNECTION_CAPACITY = 7;
     private static ConnectionPool instance;
-    private BlockingQueue<Connection> free = new LinkedBlockingQueue<>(7);
-    private BlockingQueue<Connection> used = new LinkedBlockingQueue<>(7);
+    private BlockingQueue<Connection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
+    private BlockingQueue<Connection> used = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
     private static Lock lock = new ReentrantLock(true);
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
 
@@ -40,7 +41,7 @@ public class ConnectionPool {
         prop.put("useLegacyDatetimeCode", "false");
         prop.put("serverTimezone", "UTC");
         prop.put("serverSslCert", "classpath:server.crt");
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < CONNECTION_CAPACITY; i++) {
             Connection connection = null;
             try {
                 connection = DriverManager.getConnection(url, prop);
