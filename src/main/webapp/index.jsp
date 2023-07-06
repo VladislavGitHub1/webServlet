@@ -16,7 +16,7 @@
     <br/>
     <input type="submit" name="sub" value="Push"/>
     <br/>
-    ${login_msg}
+    ${login_failed}
 </form>
 </body>
 </html>

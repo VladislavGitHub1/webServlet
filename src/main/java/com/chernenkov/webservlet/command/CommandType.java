@@ -15,8 +15,15 @@ public enum CommandType {
     CommandType(Command command) {
         this.command = command;
     }
-    public static Command define(String commandStr){
-        CommandType current = CommandType.valueOf(commandStr.toUpperCase());
-        return current.command;
+
+    public static Command define(String commandStr) {
+        Command command;
+        if (commandStr != null) {
+            CommandType current = CommandType.valueOf(commandStr.toUpperCase());
+            command = current.command;
+        } else {
+            command = DEFAULT.command;
+        }
+        return command;
     }
 }
