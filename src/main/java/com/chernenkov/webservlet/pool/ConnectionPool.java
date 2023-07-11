@@ -1,5 +1,6 @@
 package com.chernenkov.webservlet.pool;
 
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,7 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class ConnectionPool {
+    static Logger logger = LogManager.getLogger();
     private static final int CONNECTION_CAPACITY = 8;
     private static ConnectionPool instance;
     private BlockingQueue<ProxyConnection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
@@ -24,7 +30,8 @@ public class ConnectionPool {
 
         } catch (
                 SQLException e) {
-           throw new ExceptionInInitializerError();
+            logger.fatal(e);
+            throw new ExceptionInInitializerError();
         }
     }
 
@@ -47,6 +54,7 @@ public class ConnectionPool {
             try {
                 proxyConnection = new ProxyConnection(connection = DriverManager.getConnection(url, prop));
             } catch (SQLException e) {
+                logger.fatal(e);
                 throw new ExceptionInInitializerError();
             }
             free.add(proxyConnection);

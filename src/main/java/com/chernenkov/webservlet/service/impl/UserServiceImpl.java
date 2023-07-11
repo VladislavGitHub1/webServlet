@@ -4,8 +4,11 @@ import com.chernenkov.webservlet.dao.impl.UserDaoImpl;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.exception.ServiceException;
 import com.chernenkov.webservlet.service.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class UserServiceImpl implements UserService {
+    static Logger logger = LogManager.getLogger();
     private static UserServiceImpl instance = new UserServiceImpl();
 
     private UserServiceImpl() {

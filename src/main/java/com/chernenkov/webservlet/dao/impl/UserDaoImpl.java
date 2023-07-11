@@ -6,6 +6,8 @@ import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.pool.ConnectionPool;
 import com.chernenkov.webservlet.pool.ProxyConnection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Properties;
 
 public class UserDaoImpl extends BaseDao<User> implements UserDao {
+    static Logger logger = LogManager.getLogger();
     private static final String INSERT_USER = "INSERT INTO users (login, password) VALUES (?,?)";
     private static final String SELECT_ALL_USERS = "SELECT * FROM users";
     private static final String GET_PASSWORD_BY_LOGIN = "SELECT password FROM users WHERE login= ?";
