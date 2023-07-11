@@ -13,8 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConnectionPool {
     private static final int CONNECTION_CAPACITY = 7;
     private static ConnectionPool instance;
-    private BlockingQueue<Connection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
-    private BlockingQueue<Connection> used = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
+    private BlockingQueue<ProxyConnection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
+    private BlockingQueue<ProxyConnection> used = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
     private static Lock lock = new ReentrantLock(true);
     private static AtomicBoolean isCreated = new AtomicBoolean(false);
 
@@ -24,12 +24,12 @@ public class ConnectionPool {
 
         } catch (
                 SQLException e) {
-            e.printStackTrace();
+           throw new ExceptionInInitializerError();
         }
     }
 
     private ConnectionPool() {
-        String url = "jdbc:mysql://localhost:3306/web_servlet";
+        String url = "jdbc:mysql://localhost:3306/db_online_parmacy";
         Properties prop = new Properties();
         prop.put("user", "Starlet");
         prop.put("password", "Vlad1111");
@@ -42,13 +42,14 @@ public class ConnectionPool {
         prop.put("serverTimezone", "UTC");
         prop.put("serverSslCert", "classpath:server.crt");
         for (int i = 0; i < CONNECTION_CAPACITY; i++) {
+            ProxyConnection proxyConnection = null;
             Connection connection = null;
             try {
-                connection = DriverManager.getConnection(url, prop);
+                proxyConnection = new ProxyConnection(connection = DriverManager.getConnection(url, prop));
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new ExceptionInInitializerError();
             }
-            free.add(connection);
+            free.add(proxyConnection);
         }
     }
 
@@ -68,23 +69,35 @@ public class ConnectionPool {
         return instance;
     }
 
-    public Connection getConnection() {
-        Connection connection = null;
+    public ProxyConnection getProxyConnection() {
+        ProxyConnection proxyConnection = null;
         try {
-            connection = free.take();
-            used.put(connection);
+            proxyConnection = free.take();
+            used.put(proxyConnection);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
-        return connection;
+        return proxyConnection;
     }
 
-    public void releaseConnection(Connection connection) {
+    public void releaseProxyConnection(ProxyConnection proxyConnection) {
         try {
-            used.remove(connection);
-            free.put(connection);
+            if (proxyConnection.getConnection() instanceof Connection) {
+                used.remove(proxyConnection);
+                free.put(proxyConnection);
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
+
+    public void totallyCloseConnection(ProxyConnection proxyConnection) {
+        try {
+            proxyConnection.closeConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

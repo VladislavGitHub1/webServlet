@@ -4,6 +4,7 @@ import com.chernenkov.webservlet.dao.BaseDao;
 import com.chernenkov.webservlet.dao.UserDao;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.pool.ConnectionPool;
+import com.chernenkov.webservlet.pool.ProxyConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -27,11 +28,9 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public List<User> insertUser(User user) {
         List<User> userList = new ArrayList<>();
-        String url = "jdbc:mysql://localhost:3306/web_servlet";
-        Properties prop = new Properties();
-        try (Connection connection = ConnectionPool.getInstance().getConnection();
-             Statement statement = connection.createStatement();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USER)) {
+        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
+             Statement statement = proxyConnection.createStatement();
+             PreparedStatement preparedStatement = proxyConnection.prepareStatement(INSERT_USER)) {
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
             preparedStatement.execute();
@@ -73,8 +72,8 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean authenticate(String login, String password) {
         boolean match = false;
-        try (Connection connection = ConnectionPool.getInstance().getConnection();
-             PreparedStatement statement = connection.prepareStatement(GET_PASSWORD_BY_LOGIN)) {
+        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
+             PreparedStatement statement = proxyConnection.prepareStatement(GET_PASSWORD_BY_LOGIN)) {
             statement.setString(1, login);
             ResultSet resultSet = statement.executeQuery();
             String passFromDb;
