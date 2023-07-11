@@ -2,6 +2,7 @@ package com.chernenkov.webservlet.controller;
 
 import com.chernenkov.webservlet.command.Command;
 import com.chernenkov.webservlet.command.CommandType;
+import com.chernenkov.webservlet.exception.CommandException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,7 +24,12 @@ public class Controller extends HttpServlet {
         response.setContentType("text/html");
         String commandStr = request.getParameter(COMMAND);
         Command command = CommandType.define(commandStr);
-        String page = command.execute(request);
+        String page = null;
+        try {
+            page = command.execute(request);
+        } catch (CommandException e) {
+           e.printStackTrace(); //TODO
+        }
         request.getRequestDispatcher(page).forward(request, response);
     }
 }

@@ -3,6 +3,7 @@ package com.chernenkov.webservlet.dao.impl;
 import com.chernenkov.webservlet.dao.BaseDao;
 import com.chernenkov.webservlet.dao.UserDao;
 import com.chernenkov.webservlet.entity.User;
+import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.pool.ConnectionPool;
 import com.chernenkov.webservlet.pool.ProxyConnection;
 
@@ -26,7 +27,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> insertUser(User user) {
+    public List<User> insertUser(User user) throws DaoException {
         List<User> userList = new ArrayList<>();
         try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
              Statement statement = proxyConnection.createStatement();
@@ -44,7 +45,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
                 userList.add(temp);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException(e);
         }
         return userList;
     }
@@ -70,7 +71,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public boolean authenticate(String login, String password) {
+    public boolean authenticate(String login, String password) throws DaoException {
         boolean match = false;
         try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
              PreparedStatement statement = proxyConnection.prepareStatement(GET_PASSWORD_BY_LOGIN)) {
@@ -82,7 +83,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
                 match = password.equals(passFromDb);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+           throw new DaoException(e);
         }
 
         return match;

@@ -1,6 +1,8 @@
 package com.chernenkov.webservlet.command.impl;
 
 import com.chernenkov.webservlet.command.Command;
+import com.chernenkov.webservlet.exception.CommandException;
+import com.chernenkov.webservlet.exception.ServiceException;
 import com.chernenkov.webservlet.service.UserService;
 import com.chernenkov.webservlet.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,17 +17,21 @@ import static com.chernenkov.webservlet.util.PageName.INDEX_PAGE;
 
 public class LoginCommand implements Command {
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request) throws CommandException {
         String login = request.getParameter(LOGIN);
         String password = request.getParameter(PASS);
         UserService userService = UserServiceImpl.getInstance();
         String page;
-        if(userService.authenticate(login, password)){
-            request.setAttribute(USER, login);
-            page = MAIN_PAGE;
-        } else {
-            request.setAttribute(LOGIN_FAILED, INCORRECT_LOGIN_OR_PASSWORD);
-            page = INDEX_PAGE;
+        try {
+            if(userService.authenticate(login, password)){
+                request.setAttribute(USER, login);
+                page = MAIN_PAGE;
+            } else {
+                request.setAttribute(LOGIN_FAILED, INCORRECT_LOGIN_OR_PASSWORD);
+                page = INDEX_PAGE;
+            }
+        } catch (ServiceException e) {
+            throw new CommandException(e);
         }
         return page;
     }
