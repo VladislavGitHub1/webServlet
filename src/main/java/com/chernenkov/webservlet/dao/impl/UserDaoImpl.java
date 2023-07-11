@@ -47,6 +47,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
                 temp.setPassword(tempPassword);
                 userList.add(temp);
             }
+            resultSet.close();
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -85,6 +86,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
                 passFromDb = resultSet.getString("password");
                 match = password.equals(passFromDb);
             }
+            resultSet.close();
         } catch (SQLException e) {
            throw new DaoException(e);
         }
