@@ -12,11 +12,13 @@ import org.apache.logging.log4j.Logger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public class UserDaoImpl extends BaseDao<User> implements UserDao {
     static Logger logger = LogManager.getLogger();
-    private static final String INSERT_USER = "INSERT INTO users (login, password) VALUES (?,?)";
+    private static final String LOGIN = "login";
+    private static final String PASSWORD = "password";
+
+    private static final String INSERT_USER = "INSERT INTO users (login, password, name, lastname) VALUES (?,?,?,?)";
     private static final String SELECT_ALL_USERS = "SELECT * FROM users";
     private static final String GET_PASSWORD_BY_LOGIN = "SELECT password FROM users WHERE login= ?";
 
@@ -30,24 +32,38 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> insertUser(User user) throws DaoException {
-        List<User> userList = new ArrayList<>();
-        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
+    public boolean insertUser(User user) throws DaoException {
+        boolean wasAdded = false;
+        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
              Statement statement = proxyConnection.createStatement();
-             PreparedStatement preparedStatement = proxyConnection.prepareStatement(INSERT_USER)) {
+             PreparedStatement preparedStatement = proxyConnection.prepareStatement(INSERT_USER);
+        ) {
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
+            preparedStatement.setString(3, user.getName());
+            preparedStatement.setString(4, user.getLastname());
             preparedStatement.execute();
-            ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS);
+            wasAdded = true;
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return wasAdded;
+    }
+
+    @Override
+    public List<User> selectAllUsers() throws DaoException {
+        List<User> userList = new ArrayList<>();
+        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
+             Statement statement = proxyConnection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS)) {
             while (resultSet.next()) {
                 User temp = new User();
-                String tempLogin = resultSet.getString("login");
-                String tempPassword = resultSet.getString("password");
+                String tempLogin = resultSet.getString(LOGIN);
+                String tempPassword = resultSet.getString(PASSWORD);
                 temp.setLogin(tempLogin);
                 temp.setPassword(tempPassword);
                 userList.add(temp);
             }
-            resultSet.close();
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -77,18 +93,17 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean authenticate(String login, String password) throws DaoException {
         boolean match = false;
-        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getProxyConnection();
-             PreparedStatement statement = proxyConnection.prepareStatement(GET_PASSWORD_BY_LOGIN)) {
+        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement statement = proxyConnection.prepareStatement(GET_PASSWORD_BY_LOGIN);
+             ResultSet resultSet = statement.executeQuery()) {
             statement.setString(1, login);
-            ResultSet resultSet = statement.executeQuery();
             String passFromDb;
             if (resultSet.next()) {
-                passFromDb = resultSet.getString("password");
+                passFromDb = resultSet.getString(PASSWORD);
                 match = password.equals(passFromDb);
             }
-            resultSet.close();
         } catch (SQLException e) {
-           throw new DaoException(e);
+            throw new DaoException(e);
         }
 
         return match;

@@ -28,10 +28,9 @@ public class ConnectionPool {
         try {
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 
-        } catch (
-                SQLException e) {
+        } catch (SQLException e) {
             logger.fatal(e);
-            throw new ExceptionInInitializerError();
+            throw new ExceptionInInitializerError(e.getMessage());
         }
     }
 
@@ -55,7 +54,7 @@ public class ConnectionPool {
                 proxyConnection = new ProxyConnection(connection = DriverManager.getConnection(url, prop));
             } catch (SQLException e) {
                 logger.fatal(e);
-                throw new ExceptionInInitializerError();
+                throw new ExceptionInInitializerError(e.getMessage());
             }
             free.add(proxyConnection);
         }
@@ -77,35 +76,42 @@ public class ConnectionPool {
         return instance;
     }
 
-    public ProxyConnection getProxyConnection() {
-        ProxyConnection proxyConnection = null;
+    public ProxyConnection getConnection() {
+        ProxyConnection connection = null;
         try {
-            proxyConnection = free.take();
-            used.put(proxyConnection);
+            connection = free.take();
+            used.put(connection);
         } catch (InterruptedException e) {
+            logger.error("Get connection failed");
             Thread.currentThread().interrupt();
         }
-        return proxyConnection;
+        return connection;
     }
 
-    public void releaseProxyConnection(ProxyConnection proxyConnection) {
+    public void releaseProxyConnection(Connection connection) {
         try {
-            if (proxyConnection.getConnection() instanceof Connection) {
-                used.remove(proxyConnection);
-                free.put(proxyConnection);
+            if (connection instanceof ProxyConnection) {
+                used.remove((ProxyConnection) connection);
+                free.put((ProxyConnection) connection);
             }
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Release connection failed");
+            Thread.currentThread().interrupt();
         }
     }
 
-    public void totallyCloseConnection(ProxyConnection proxyConnection) {
-        try {
-            proxyConnection.closeConnection();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public void destroyPool() {
+        for (int i = 0; i < CONNECTION_CAPACITY; i++) {
+            try {
+                free.take().closeConnection();
+            } catch (SQLException | InterruptedException e) {
+                logger.info("Connection pool was destroyed");
+            }
         }
     }
+//    public void deregisterDriver(){
+//        DriverManager.deregisterDriver();
+//    }
 
 }

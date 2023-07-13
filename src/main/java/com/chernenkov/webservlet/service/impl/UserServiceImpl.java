@@ -1,6 +1,7 @@
 package com.chernenkov.webservlet.service.impl;
 
 import com.chernenkov.webservlet.dao.impl.UserDaoImpl;
+import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.exception.ServiceException;
 import com.chernenkov.webservlet.service.UserService;
@@ -20,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean authenticate(String login, String password) throws ServiceException {
+        //validation TODO
         UserDaoImpl userDao = UserDaoImpl.getInstance();
         boolean match = false;
         try {
@@ -28,5 +30,15 @@ public class UserServiceImpl implements UserService {
             throw new ServiceException(e);
         }
         return match;
+    }
+
+    @Override
+    public boolean register(User user) throws ServiceException {
+        UserDaoImpl userDao = UserDaoImpl.getInstance();
+        try {
+            return userDao.insertUser(user);
+        } catch (DaoException e) {
+            throw new ServiceException(e);
+        }
     }
 }

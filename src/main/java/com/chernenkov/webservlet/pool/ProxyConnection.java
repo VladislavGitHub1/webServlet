@@ -10,9 +10,13 @@ public class ProxyConnection implements Connection {
     ProxyConnection(Connection connection){
         this.connection = connection;
     }
+    @Override
+    public void close() throws SQLException {
+        ConnectionPool.getInstance().releaseProxyConnection(this);
 
-    Connection getConnection() {
-        return connection;
+    }
+    void closeConnection() throws SQLException{
+        connection.close();
     }
 
     @Override
@@ -55,14 +59,6 @@ public class ProxyConnection implements Connection {
 
     }
 
-    @Override
-    public void close() throws SQLException {
-        ConnectionPool.getInstance().releaseProxyConnection(this);
-
-    }
-    void closeConnection() throws SQLException{
-        connection.close();
-    }
 
     @Override
     public boolean isClosed() throws SQLException {

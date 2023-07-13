@@ -6,5 +6,10 @@
 </head>
 <body>
 Hello = ${user}
+<hr/>
+<form action="controller">
+    <input type="hidden" name="command" value="logOut"/>
+    <input type="submit" value="logOut"/>
+</form>
 </body>
 </html>

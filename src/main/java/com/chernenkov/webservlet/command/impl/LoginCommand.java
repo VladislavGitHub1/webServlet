@@ -6,6 +6,8 @@ import com.chernenkov.webservlet.exception.ServiceException;
 import com.chernenkov.webservlet.service.UserService;
 import com.chernenkov.webservlet.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import static com.chernenkov.webservlet.util.RequestParameter.LOGIN;
 import static com.chernenkov.webservlet.util.RequestParameter.PASS;
 import static com.chernenkov.webservlet.util.RequestAttribute.USER;
@@ -21,15 +23,18 @@ public class LoginCommand implements Command {
         String login = request.getParameter(LOGIN);
         String password = request.getParameter(PASS);
         UserService userService = UserServiceImpl.getInstance();
+        HttpSession session = request.getSession();
         String page;
         try {
-            if(userService.authenticate(login, password)){
+            if (userService.authenticate(login, password)) {
                 request.setAttribute(USER, login);
+                session.setAttribute("user_name", login);
                 page = MAIN_PAGE;
             } else {
                 request.setAttribute(LOGIN_FAILED, INCORRECT_LOGIN_OR_PASSWORD);
                 page = INDEX_PAGE;
             }
+            session.setAttribute("previous_page", page);
         } catch (ServiceException e) {
             throw new CommandException(e);
         }

@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface UserDao {
     boolean authenticate(String login, String password) throws DaoException;
-    List<User> insertUser(User user) throws DaoException;
+    boolean insertUser(User user) throws DaoException;
+    List<User> selectAllUsers() throws DaoException;
 }

@@ -18,10 +18,14 @@ public enum CommandType {
 
     public static Command define(String commandStr) {
         Command command;
-        if (commandStr != null) {
-            CommandType current = CommandType.valueOf(commandStr.toUpperCase());
-            command = current.command;
-        } else {
+        try {
+            if (commandStr != null) {
+                CommandType current = CommandType.valueOf(commandStr.toUpperCase());
+                command = current.command;
+            } else {
+                command = DEFAULT.command;
+            }
+        } catch (IllegalArgumentException e) {
             command = DEFAULT.command;
         }
         return command;
