@@ -3,7 +3,6 @@ package com.chernenkov.webservlet.controller;
 import com.chernenkov.webservlet.command.Command;
 import com.chernenkov.webservlet.command.CommandType;
 import com.chernenkov.webservlet.exception.CommandException;
-import com.chernenkov.webservlet.pool.ConnectionPool;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,13 +11,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static com.chernenkov.webservlet.util.RequestParameter.COMMAND;
+import static com.chernenkov.webservlet.command.constants.RequestParameter.COMMAND;
 
 @WebServlet(name = "helloServlet", urlPatterns = "/controller")
 public class Controller extends HttpServlet {
     @Override
     public void init() {
-//        ConnectionPool.getInstance();
     }
 
     @Override
@@ -36,8 +34,5 @@ public class Controller extends HttpServlet {
             request.setAttribute("error_msg", e.getCause());
             request.getRequestDispatcher("pages/error/error_500.jsp").forward(request,response);
         }
-    }
-    public  void destroy(){
-//        ConnectionPool.getInstance().destroyPool();
     }
 }

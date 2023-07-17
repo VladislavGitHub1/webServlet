@@ -12,7 +12,7 @@ public class ProxyConnection implements Connection {
     }
     @Override
     public void close() throws SQLException {
-        ConnectionPool.getInstance().releaseProxyConnection(this);
+        ConnectionPool.getInstance().releaseConnection(this);
 
     }
     void closeConnection() throws SQLException{

@@ -8,13 +8,13 @@ import com.chernenkov.webservlet.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import static com.chernenkov.webservlet.util.RequestParameter.LOGIN;
-import static com.chernenkov.webservlet.util.RequestParameter.PASS;
-import static com.chernenkov.webservlet.util.RequestAttribute.USER;
-import static com.chernenkov.webservlet.util.RequestAttribute.LOGIN_FAILED;
-import static com.chernenkov.webservlet.util.Message.INCORRECT_LOGIN_OR_PASSWORD;
-import static com.chernenkov.webservlet.util.PageName.MAIN_PAGE;
-import static com.chernenkov.webservlet.util.PageName.INDEX_PAGE;
+import static com.chernenkov.webservlet.command.constants.RequestParameter.LOGIN;
+import static com.chernenkov.webservlet.command.constants.RequestParameter.PASS;
+import static com.chernenkov.webservlet.command.constants.RequestAttribute.USER;
+import static com.chernenkov.webservlet.command.constants.RequestAttribute.LOGIN_FAILED;
+import static com.chernenkov.webservlet.command.constants.Message.INCORRECT_LOGIN_OR_PASSWORD;
+import static com.chernenkov.webservlet.command.constants.PageName.MAIN_PAGE;
+import static com.chernenkov.webservlet.command.constants.PageName.INDEX_PAGE;
 
 
 public class LoginCommand implements Command {

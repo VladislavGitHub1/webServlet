@@ -1,4 +1,4 @@
-package com.chernenkov.webservlet.util;
+package com.chernenkov.webservlet.command.constants;
 
 public class RequestParameter {
     public static final String COMMAND = "command";

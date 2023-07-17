@@ -2,6 +2,7 @@ package com.chernenkov.webservlet.dao.impl;
 
 import com.chernenkov.webservlet.dao.BaseDao;
 import com.chernenkov.webservlet.dao.UserDao;
+import com.chernenkov.webservlet.dao.mapper.impl.UserMapperImpl;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.pool.ConnectionPool;
@@ -12,15 +13,12 @@ import org.apache.logging.log4j.Logger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.chernenkov.webservlet.dao.impl.constants.RequestConstants;
+
+import static com.chernenkov.webservlet.dao.impl.constants.RequestConstants.*;
 
 public class UserDaoImpl extends BaseDao<User> implements UserDao {
     static Logger logger = LogManager.getLogger();
-    private static final String LOGIN = "login";
-    private static final String PASSWORD = "password";
-
-    private static final String INSERT_USER = "INSERT INTO users (login, password, name, lastname) VALUES (?,?,?,?)";
-    private static final String SELECT_ALL_USERS = "SELECT * FROM users";
-    private static final String GET_PASSWORD_BY_LOGIN = "SELECT password FROM users WHERE login= ?";
 
     private UserDaoImpl() {
     }
@@ -31,12 +29,31 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
         return instance;
     }
 
+
     @Override
-    public boolean insertUser(User user) throws DaoException {
+    public List<User> selectAllUsers() throws DaoException {
+        List<User> userList = new ArrayList<>();
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS)) {
+            while (resultSet.next()) {
+                UserMapperImpl userMapper = new UserMapperImpl();
+                User temp = userMapper.map(resultSet);
+                userList.add(temp);
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return userList;
+    }
+
+
+    @Override
+    public boolean insert(User user) throws DaoException {
         boolean wasAdded = false;
-        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
-             Statement statement = proxyConnection.createStatement();
-             PreparedStatement preparedStatement = proxyConnection.prepareStatement(INSERT_USER);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             Statement statement = connection.createStatement();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USER);
         ) {
             preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
@@ -51,33 +68,21 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> selectAllUsers() throws DaoException {
-        List<User> userList = new ArrayList<>();
-        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
-             Statement statement = proxyConnection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS)) {
-            while (resultSet.next()) {
-                User temp = new User();
-                String tempLogin = resultSet.getString(LOGIN);
-                String tempPassword = resultSet.getString(PASSWORD);
-                temp.setLogin(tempLogin);
-                temp.setPassword(tempPassword);
-                userList.add(temp);
+    public boolean delete(User user) throws DaoException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_BY_ID);
+        ) {
+            preparedStatement.setInt(1, user.getId());
+            int wasDeleted = preparedStatement.executeUpdate();
+            if (wasDeleted > 0) {
+                return true;
+            } else {
+                return false;
             }
+
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return userList;
-    }
-
-    @Override
-    public boolean insert(User user) {
-        return false;
-    }
-
-    @Override
-    public boolean delete(User user) {
-        return false;
     }
 
     @Override
@@ -93,14 +98,15 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     @Override
     public boolean authenticate(String login, String password) throws DaoException {
         boolean match = false;
-        try (ProxyConnection proxyConnection = ConnectionPool.getInstance().getConnection();
-             PreparedStatement statement = proxyConnection.prepareStatement(GET_PASSWORD_BY_LOGIN);
-             ResultSet resultSet = statement.executeQuery()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_PASSWORD_BY_LOGIN)) {
             statement.setString(1, login);
             String passFromDb;
-            if (resultSet.next()) {
-                passFromDb = resultSet.getString(PASSWORD);
-                match = password.equals(passFromDb);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    passFromDb = resultSet.getString(PASSWORD);
+                    match = password.equals(passFromDb);
+                }
             }
         } catch (SQLException e) {
             throw new DaoException(e);

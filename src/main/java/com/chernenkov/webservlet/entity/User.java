@@ -8,8 +8,15 @@ public class User extends AbstractEntity{
     private String password;
     private String name;
     private String lastname;
+    private boolean isAdmin;
 
-    public User() {
+    private User(Builder builder) {
+        this.id = builder.id;
+        this.login = builder.login;
+        this.password = builder.password;
+        this.name = builder.name;
+        this.lastname = builder.lastname;
+        this.isAdmin = builder.isAdmin;
     }
 
     public String getLogin() {
@@ -42,6 +49,69 @@ public class User extends AbstractEntity{
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public static class Builder{
+        private int id;
+        private String login;
+        private String password;
+        private String name;
+        private String lastname;
+        private boolean isAdmin;
+        public Builder(){
+
+        }
+
+        public Builder setId(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setLogin(String login) {
+            this.login = login;
+            return this;
+        }
+
+        public Builder setPassword(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setLastname(String lastname) {
+            this.lastname = lastname;
+            return this;
+        }
+
+        public Builder setAdmin(int admin) {
+            if (admin == 2){
+                isAdmin = true;
+            }
+            return this;
+        }
+        public User build(){
+            return new User(this);
+        }
     }
 
     @Override

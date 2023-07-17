@@ -19,22 +19,22 @@
     ${login_failed}
 </form>
 <hr/>
-<%--<h1>Registration--%>
-<%--    </h1>--%>
-<%--<form action="controller">--%>
-<%--    <input type="hidden" name="command" value="add_user"/>--%>
-<%--    Login: <input type="text" name="login" value=""/>--%>
-<%--    <br/>--%>
-<%--    Password: <input type="password" name="pass" value=""/>--%>
-<%--    <br/>--%>
-<%--    Name: <input type="text" name="name" value=""/>--%>
-<%--    <br/>--%>
-<%--    Lastname: <input type="text" name="lastname" value=""/>--%>
-<%--    <br/>--%>
-<%--    <input type="submit" name="sub" value="Register"/>--%>
-<%--    <br/>--%>
-<%--    ${authenticate_status}--%>
-<%--</form>--%>
+<h1>Registration
+    </h1>
+<form action="controller">
+    <input type="hidden" name="command" value="add_user"/>
+    Login: <input type="text" name="login" value=""/>
+    <br/>
+    Password: <input type="password" name="pass" value=""/>
+    <br/>
+    Name: <input type="text" name="name" value=""/>
+    <br/>
+    Lastname: <input type="text" name="lastname" value=""/>
+    <br/>
+    <input type="submit" name="sub" value="Register"/>
+    <br/>
+    ${authenticate_status}
+</form>
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-package com.chernenkov.webservlet.util;
+package com.chernenkov.webservlet.command.constants;
 
 public class PageName {
     public static final String INDEX_PAGE = "index.jsp";

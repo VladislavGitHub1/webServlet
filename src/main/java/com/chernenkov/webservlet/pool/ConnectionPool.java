@@ -1,6 +1,8 @@
 package com.chernenkov.webservlet.pool;
 
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -11,6 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.chernenkov.webservlet.exception.ServiceException;
+import com.chernenkov.webservlet.util.PropertiesReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +23,8 @@ public class ConnectionPool {
     static Logger logger = LogManager.getLogger();
     private static final int CONNECTION_CAPACITY = 8;
     private static ConnectionPool instance;
+    private static PropertiesReader propertiesReader = new PropertiesReader();
+    private static final String PROPERTIES_FILE_NAME = "db.properties";
     private BlockingQueue<ProxyConnection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
     private BlockingQueue<ProxyConnection> used = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
     private static Lock lock = new ReentrantLock(true);
@@ -37,16 +43,12 @@ public class ConnectionPool {
     private ConnectionPool() {
         String url = "jdbc:mysql://localhost:3306/db_online_parmacy";
         Properties prop = new Properties();
-        prop.put("user", "Starlet");
-        prop.put("password", "Vlad1111");
-        prop.put("autoReconnect", "true");
-        prop.put("characterEncoding", "UTF-8");
-        prop.put("useUnicode", "true");
-        prop.put("useSSL", "true");
-        prop.put("useJDBCCompliantTimezoneShift", "true");
-        prop.put("useLegacyDatetimeCode", "false");
-        prop.put("serverTimezone", "UTC");
-        prop.put("serverSslCert", "classpath:server.crt");
+        try {
+            prop.load(new FileReader(propertiesReader.getFileFromResource(PROPERTIES_FILE_NAME).toFile()));
+        } catch (IOException | ServiceException e) {
+            logger.fatal(e);
+            throw new ExceptionInInitializerError(e.getMessage());
+        }
         for (int i = 0; i < CONNECTION_CAPACITY; i++) {
             ProxyConnection proxyConnection = null;
             Connection connection = null;
@@ -76,7 +78,7 @@ public class ConnectionPool {
         return instance;
     }
 
-    public ProxyConnection getConnection() {
+    public Connection getConnection() {
         ProxyConnection connection = null;
         try {
             connection = free.take();
@@ -88,16 +90,15 @@ public class ConnectionPool {
         return connection;
     }
 
-    public void releaseProxyConnection(Connection connection) {
-        try {
-            if (connection instanceof ProxyConnection) {
-                used.remove((ProxyConnection) connection);
-                free.put((ProxyConnection) connection);
+    public void releaseConnection(Connection connection) {
+        if (connection instanceof ProxyConnection proxy) {
+            try {
+                used.remove(proxy);
+                free.put(proxy);
+            } catch (InterruptedException e) {
+                logger.error("Release connection failed" + e.getMessage());
+                Thread.currentThread().interrupt();
             }
-
-        } catch (InterruptedException e) {
-            logger.error("Release connection failed");
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -106,12 +107,14 @@ public class ConnectionPool {
             try {
                 free.take().closeConnection();
             } catch (SQLException | InterruptedException e) {
-                logger.info("Connection pool was destroyed");
+                logger.info("Connection pool was destroyed" + e.getMessage());
+            }
+            try {
+                DriverManager.deregisterDriver(new com.mysql.cj.jdbc.Driver());
+            } catch (SQLException e) {
+                logger.error("Error deregistering driver: " + e.getMessage());
+                throw new ExceptionInInitializerError(e);
             }
         }
     }
-//    public void deregisterDriver(){
-//        DriverManager.deregisterDriver();
-//    }
-
 }
