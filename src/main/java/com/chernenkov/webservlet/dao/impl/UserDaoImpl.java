@@ -6,16 +6,16 @@ import com.chernenkov.webservlet.dao.mapper.impl.UserMapperImpl;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.pool.ConnectionPool;
-import com.chernenkov.webservlet.pool.ProxyConnection;
+import com.chernenkov.webservlet.util.PasswordCoding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import com.chernenkov.webservlet.dao.impl.constants.RequestConstants;
+import java.util.Optional;
 
-import static com.chernenkov.webservlet.dao.impl.constants.RequestConstants.*;
+import static com.chernenkov.webservlet.dao.RequestConstants.*;
 
 public class UserDaoImpl extends BaseDao<User> implements UserDao {
     static Logger logger = LogManager.getLogger();
@@ -47,6 +47,23 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
         return userList;
     }
 
+    public Optional<User> selectUserByLogin(String login) throws DaoException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_LOGIN)
+        ) {
+            preparedStatement.setString(1, login);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    UserMapperImpl userMapper = new UserMapperImpl();
+                    return Optional.of(userMapper.map(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e.getMessage());
+        }
+        return Optional.empty();
+    }
+
 
     @Override
     public boolean insert(User user) throws DaoException {
@@ -74,12 +91,7 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
         ) {
             preparedStatement.setInt(1, user.getId());
             int wasDeleted = preparedStatement.executeUpdate();
-            if (wasDeleted > 0) {
-                return true;
-            } else {
-                return false;
-            }
-
+            return (wasDeleted > 0);
         } catch (SQLException e) {
             throw new DaoException(e);
         }
