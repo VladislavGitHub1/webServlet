@@ -3,7 +3,9 @@ package com.chernenkov.webservlet.service;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.ServiceException;
 
+import java.util.Optional;
+
 public interface UserService {
-    boolean authenticate(String login, String password) throws ServiceException;
-    boolean register(User user) throws ServiceException;
+    Optional<User> authenticate(String login, String password) throws ServiceException;
+    Optional<User> register(User user) throws ServiceException;
 }

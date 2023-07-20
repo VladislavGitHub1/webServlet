@@ -23,7 +23,6 @@ public class ConnectionPool {
     static Logger logger = LogManager.getLogger();
     private static final int CONNECTION_CAPACITY = 8;
     private static ConnectionPool instance;
-    private static PropertiesReader propertiesReader = new PropertiesReader();
     private static final String PROPERTIES_FILE_NAME = "db.properties";
     private BlockingQueue<ProxyConnection> free = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
     private BlockingQueue<ProxyConnection> used = new LinkedBlockingQueue<>(CONNECTION_CAPACITY);
@@ -43,6 +42,7 @@ public class ConnectionPool {
     private ConnectionPool() {
         String url = "jdbc:mysql://localhost:3306/db_online_parmacy";
         Properties prop = new Properties();
+        PropertiesReader propertiesReader = new PropertiesReader();
         try {
             prop.load(new FileReader(propertiesReader.getFileFromResource(PROPERTIES_FILE_NAME).toFile()));
         } catch (IOException | ServiceException e) {

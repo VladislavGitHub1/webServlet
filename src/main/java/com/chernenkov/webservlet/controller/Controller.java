@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static com.chernenkov.webservlet.command.constants.RequestParameter.COMMAND;
+import static com.chernenkov.webservlet.command.RequestParameter.COMMAND;
 
 @WebServlet(name = "helloServlet", urlPatterns = "/controller")
 public class Controller extends HttpServlet {

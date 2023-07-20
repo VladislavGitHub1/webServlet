@@ -2,13 +2,14 @@ package com.chernenkov.webservlet.entity;
 
 import java.util.Objects;
 
-public class User extends AbstractEntity{
+public class User extends AbstractEntity {
     private int id;
     private String login;
     private String password;
     private String name;
     private String lastname;
-    private boolean isAdmin;
+    private UserType userType;
+    User(){}
 
     private User(Builder builder) {
         this.id = builder.id;
@@ -16,16 +17,13 @@ public class User extends AbstractEntity{
         this.password = builder.password;
         this.name = builder.name;
         this.lastname = builder.lastname;
-        this.isAdmin = builder.isAdmin;
+        this.userType = builder.userType;
     }
 
     public String getLogin() {
         return login;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
 
     public String getPassword() {
         return password;
@@ -39,42 +37,28 @@ public class User extends AbstractEntity{
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getLastname() {
         return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public UserType getUserType() {
+        return userType;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
-    }
-
-    public static class Builder{
+    public static class Builder {
         private int id;
         private String login;
         private String password;
         private String name;
         private String lastname;
-        private boolean isAdmin;
-        public Builder(){
+        private UserType userType;
+
+        public Builder() {
 
         }
 
@@ -103,13 +87,13 @@ public class User extends AbstractEntity{
             return this;
         }
 
-        public Builder setAdmin(int admin) {
-            if (admin == 2){
-                isAdmin = true;
-            }
+        public Builder setUserType(int userTypeId) {
+            UserType[] userTypes = UserType.values();
+            this.userType = userTypes[userTypeId];
             return this;
         }
-        public User build(){
+
+        public User build() {
             return new User(this);
         }
     }
@@ -135,6 +119,7 @@ public class User extends AbstractEntity{
         sb.append(", password='").append(password).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", lastname='").append(lastname).append('\'');
+        sb.append(", userType=").append(userType);
         sb.append('}');
         return sb.toString();
     }
