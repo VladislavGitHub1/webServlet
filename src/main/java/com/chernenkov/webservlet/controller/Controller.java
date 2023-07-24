@@ -35,4 +35,21 @@ public class Controller extends HttpServlet {
             request.getRequestDispatcher("pages/error/error_500.jsp").forward(request,response);
         }
     }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("text/html");
+        String commandStr = request.getParameter(COMMAND);
+        Command command = CommandType.define(commandStr);
+        String page;
+        try {
+            page = command.execute(request);
+            request.getRequestDispatcher(page).forward(request, response);
+        } catch (CommandException e) {
+//          throw new ServletException(e);
+//          response.sendError(500);
+            request.setAttribute("error_msg", e.getCause());
+            request.getRequestDispatcher("pages/error/error_500.jsp").forward(request,response);
+        }
+    }
 }

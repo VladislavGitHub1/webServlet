@@ -5,8 +5,10 @@ public interface UserValidator {
     String VALID_PASSWORD = "^[A-Za-z0-9]{1,30}$";
     String VALID_NAME = "^[A-Za-z]{1,30}$";
     String VALID_LASTNAME = "^[A-Za-z]{1,30}$";
+    String VALID_ID = "\\d+";
     boolean loginValidate(String login);
     boolean passwordValidate(String password);
     boolean nameValidate(String name);
     boolean lastnameValidate(String lastname);
+    boolean idValidate(String id);
 }
