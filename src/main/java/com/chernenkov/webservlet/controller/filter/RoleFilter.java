@@ -34,7 +34,6 @@ public class RoleFilter implements Filter {
             session.setAttribute(USER_TYPE, type);
             RequestDispatcher dispatcher = servletRequest.getServletContext().getRequestDispatcher(INDEX_PAGE);
             dispatcher.forward(req,resp);
-            return;
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }

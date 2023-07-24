@@ -1,8 +1,8 @@
 package com.chernenkov.webservlet.controller.filter;
 
+import com.chernenkov.webservlet.entity.UserType;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.annotation.WebInitParam;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -11,12 +11,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.chernenkov.webservlet.command.RequestAttribute.USER_NAME;
+import static com.chernenkov.webservlet.command.PageName.INDEX_PAGE;
 import static com.chernenkov.webservlet.command.RequestAttribute.USER_TYPE;
 
-@WebFilter(urlPatterns = {"/pages/main.jsp"})
-
-public class MainPageFilter implements Filter {
+@WebFilter(urlPatterns = {"*.jsp"})
+public class JSPFilter implements Filter {
     static Logger logger = LogManager.getLogger();
 
     @Override
@@ -24,14 +23,17 @@ public class MainPageFilter implements Filter {
         Filter.super.init(filterConfig);
     }
 
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        logger.debug("Filter is working");
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        HttpSession session = httpServletRequest.getSession();
-        session.getAttribute(USER_TYPE);
-        httpServletRequest.getRequestDispatcher("index.jsp").forward(request, response);
-        chain.doFilter(request, response);
+        logger.info("Filter jsp is working");
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        String url = req.getRequestURI();
+        if (url.endsWith(".jsp")) {
+            res.sendRedirect(req.getContextPath());
+        } else {
+            chain.doFilter(request, response);
+        }
     }
 }

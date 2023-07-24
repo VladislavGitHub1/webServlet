@@ -28,7 +28,7 @@ public class Controller extends HttpServlet {
         String page;
         try {
             page = command.execute(request);
-            request.getRequestDispatcher(page).forward(request, response);
+            request.getServletContext().getRequestDispatcher(page).forward(request, response);
         } catch (CommandException e) {
 //          throw new ServletException(e);
 //          response.sendError(500);
@@ -45,7 +45,7 @@ public class Controller extends HttpServlet {
         String page;
         try {
             page = command.execute(request);
-            request.getRequestDispatcher(page).forward(request, response);
+            request.getServletContext().getRequestDispatcher(page).forward(request, response);
         } catch (CommandException e) {
 //          throw new ServletException(e);
 //          response.sendError(500);
