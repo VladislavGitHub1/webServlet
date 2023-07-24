@@ -19,6 +19,7 @@ public class Controller extends HttpServlet {
     public void init() {
     }
 
+    //TODO method
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
