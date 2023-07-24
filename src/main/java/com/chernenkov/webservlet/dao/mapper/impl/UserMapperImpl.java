@@ -26,7 +26,6 @@ public class UserMapperImpl implements Mapper<User> {
 
         int userId = resultSet.getInt(ID_USER);
         String userLogin = resultSet.getString(LOGIN);
-//        String userPassword = resultSet.getString(PASSWORD);
         String userName = resultSet.getString(NAME);
         String userLastname = resultSet.getString(LASTNAME);
         int userRoleId = resultSet.getInt(ROLE_ID);
@@ -34,7 +33,6 @@ public class UserMapperImpl implements Mapper<User> {
         return new User.Builder()
                 .setId(userId)
                 .setLogin(userLogin)
-//                .setPassword(userPassword)
                 .setName(userName)
                 .setLastname(userLastname)
                 .setUserType(userRoleId)

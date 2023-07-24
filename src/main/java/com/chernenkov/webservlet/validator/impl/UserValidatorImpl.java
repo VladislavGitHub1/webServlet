@@ -6,12 +6,24 @@ import com.chernenkov.webservlet.validator.UserValidator;
 
 public class UserValidatorImpl implements UserValidator {
 
-    public boolean userValidate(User user) {
-        boolean isValid = false;
-        isValid = (user.getLogin().matches(VALID_LOGIN) &&
-                user.getPassword().matches(VALID_PASSWORD) &&
-                user.getName().matches(VALID_NAME) &&
-                user.getLastname().matches(VALID_LASTNAME));
+    public boolean userValidate(UserDto userDto) {
+        boolean isValid = true;
+        if(!userDto.getLogin().matches(VALID_LOGIN)){
+            userDto.setLogin("incorrect field");
+            isValid = false;
+        }
+        if(!userDto.getPassword().matches(VALID_PASSWORD)){
+            userDto.setPassword("");
+            isValid = false;
+        }
+        if(!userDto.getName().matches(VALID_NAME)){
+            userDto.setName("incorrect field");
+            isValid = false;
+        }
+        if(!userDto.getLastname().matches(VALID_LASTNAME)){
+            userDto.setLastname("incorrect field");
+            isValid = false;
+        }
         return isValid;
     }
 
@@ -45,5 +57,14 @@ public class UserValidatorImpl implements UserValidator {
             boolean isValid = lastname.matches(VALID_LASTNAME);
             return isValid;
         } else return false;
+    }
+
+    @Override
+    public boolean idValidate(String id) {
+        boolean isValid = false;
+        if (id != null) {
+            isValid = id.matches(VALID_ID);
+        }
+        return isValid;
     }
 }

@@ -6,7 +6,6 @@ import com.chernenkov.webservlet.dao.mapper.impl.UserMapperImpl;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.exception.DaoException;
 import com.chernenkov.webservlet.pool.ConnectionPool;
-import com.chernenkov.webservlet.util.PasswordCoding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,25 +27,10 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
     public static UserDaoImpl getInstance() {
         return instance;
     }
+    private static UserMapperImpl userMapper = new UserMapperImpl();
 
 
     @Override
-    public List<User> selectAllUsers() throws DaoException {
-        List<User> userList = new ArrayList<>();
-        try (Connection connection = ConnectionPool.getInstance().getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS)) {
-            while (resultSet.next()) {
-                UserMapperImpl userMapper = new UserMapperImpl();
-                User temp = userMapper.map(resultSet);
-                userList.add(temp);
-            }
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        return userList;
-    }
-
     public Optional<User> selectUserByLogin(String login) throws DaoException {
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_LOGIN)
@@ -54,7 +38,22 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
             preparedStatement.setString(1, login);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    UserMapperImpl userMapper = new UserMapperImpl();
+                    return Optional.of(userMapper.map(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e.getMessage());
+        }
+        return Optional.empty();
+    }
+    @Override
+    public Optional<User> selectUserById(int id) throws DaoException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_ID)
+        ) {
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
                     return Optional.of(userMapper.map(resultSet));
                 }
             }
@@ -86,20 +85,44 @@ public class UserDaoImpl extends BaseDao<User> implements UserDao {
 
     @Override
     public boolean delete(User user) throws DaoException {
-        try (Connection connection = ConnectionPool.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_BY_ID);
-        ) {
-            preparedStatement.setInt(1, user.getId());
-            int wasDeleted = preparedStatement.executeUpdate();
-            return (wasDeleted > 0);
-        } catch (SQLException e) {
-            throw new DaoException(e);
+        if (user.getId() != 0) {
+            try (Connection connection = ConnectionPool.getInstance().getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_BY_ID);
+            ) {
+                preparedStatement.setInt(1, user.getId());
+                int wasDeleted = preparedStatement.executeUpdate();
+                return (wasDeleted > 0);
+            } catch (SQLException e) {
+                throw new DaoException(e);
+            }
+        } else if (user.getLogin() != null && !user.getLogin().isEmpty()) {
+            try (Connection connection = ConnectionPool.getInstance().getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_BY_LOGIN);
+            ) {
+                preparedStatement.setString(1, user.getLogin());
+                int wasDeleted = preparedStatement.executeUpdate();
+                return (wasDeleted > 0);
+            } catch (SQLException e) {
+                throw new DaoException(e);
+            }
         }
+        return false;
     }
 
     @Override
-    public List<User> findAll() {
-        return null;
+    public List<User> findAll() throws DaoException {
+        List<User> userList = new ArrayList<>();
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_USERS)) {
+            while (resultSet.next()) {
+                User temp = userMapper.map(resultSet);
+                userList.add(temp);
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return userList;
     }
 
     @Override

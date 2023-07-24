@@ -1,16 +1,12 @@
 package com.chernenkov.webservlet.entity;
 
-public class UserDto extends User{
-    public UserDto(){
-        super();
-    }
+public class UserDto extends AbstractEntity{
 
     private String login;
     private String password;
     private String name;
     private String lastname;
 
-    @Override
     public String getLogin() {
         return login;
     }
@@ -19,17 +15,14 @@ public class UserDto extends User{
         this.login = login;
     }
 
-    @Override
     public String getPassword() {
         return password;
     }
 
-    @Override
     public void setPassword(String password) {
         this.password = password;
     }
 
-    @Override
     public String getName() {
         return name;
     }
@@ -38,7 +31,6 @@ public class UserDto extends User{
         this.name = name;
     }
 
-    @Override
     public String getLastname() {
         return lastname;
     }

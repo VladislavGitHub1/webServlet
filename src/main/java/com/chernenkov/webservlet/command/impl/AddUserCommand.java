@@ -1,6 +1,7 @@
 package com.chernenkov.webservlet.command.impl;
 
 import com.chernenkov.webservlet.command.Command;
+import com.chernenkov.webservlet.entity.AbstractEntity;
 import com.chernenkov.webservlet.entity.User;
 import com.chernenkov.webservlet.entity.UserDto;
 import com.chernenkov.webservlet.exception.CommandException;
@@ -13,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 
-import static com.chernenkov.webservlet.command.PageName.INDEX_PAGE;
+import static com.chernenkov.webservlet.command.PageName.*;
 import static com.chernenkov.webservlet.command.RequestAttribute.*;
 import static com.chernenkov.webservlet.command.RequestParameter.*;
 
@@ -27,24 +28,24 @@ public class AddUserCommand implements Command {
         String name = request.getParameter(NAME);
         String lastname = request.getParameter(LASTNAME);
         UserService userService = UserServiceImpl.getInstance();
-        String page = INDEX_PAGE;
-        User user = new User.Builder()
-                .setLogin(login)
-                .setPassword(password)
-                .setName(name)
-                .setLastname(lastname)
-                .build();
+        String page = REGISTRATION_PAGE;
+        UserDto userDto = new UserDto();
+        userDto.setLogin(login);
+        userDto.setPassword(password);
+        userDto.setName(name);
+        userDto.setLastname(lastname);
         try {
-            Optional<User> temp = userService.register(user);
+            Optional<AbstractEntity> temp = userService.register(userDto);
             if (temp.get() instanceof UserDto) {
-                UserDto userDto = (UserDto) temp.get();
+                UserDto userDtoTemp = (UserDto) temp.get();
                 request.setAttribute(AUTHENTICATE_STATUS, "Incorrect fields");
-                request.setAttribute("dto_login", userDto.getLogin());
-                request.setAttribute("dto_password", userDto.getPassword());
-                request.setAttribute("dto_name", userDto.getName());
-                request.setAttribute("dto_lastname", userDto.getLastname());
+                request.setAttribute("dto_login", userDtoTemp.getLogin());
+                request.setAttribute("dto_password", userDtoTemp.getPassword());
+                request.setAttribute("dto_name", userDtoTemp.getName());
+                request.setAttribute("dto_lastname", userDtoTemp.getLastname());
             } else {
                 request.setAttribute(AUTHENTICATE_STATUS, "You was registered");
+                page = AUTHORIZATION_PAGE;
             }
         } catch (ServiceException e) {
             throw new CommandException(e);
